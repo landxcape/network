@@ -3,15 +3,24 @@ from django.db import models
 
 
 class User(AbstractUser):
-    following = models.ManyToManyField(
-        "User", blank=True, related_name="followers")
+    # following = models.ManyToManyField(
+    #     "User", blank=True, related_name="followers")
+    pass
 
 
-class Post(models.Model):
+class Comments(models.Model):
+    user_id = models.ForeignKey(
+        "User", on_delete=models.CASCADE, related_name="comments")
+    text = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class Posts(models.Model):
     user_id = models.ForeignKey(
         "User", on_delete=models.CASCADE, related_name="posts")
     text = models.CharField(max_length=1000)
-    likes = models.IntegerField()
+    likes = models.ManyToManyField(
+        "User", blank=True, related_name="post")
     comments_id = models.ManyToManyField(
         "Comments", blank=True, related_name="post_id")
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -21,7 +30,7 @@ class Post(models.Model):
             "id": self.id,
             "poster": self.user_id.username,
             "text": self.text,
-            "likes": self.likes,
+            "likes": len(self.likes.all()),
             "comments": [
                 {
                     'id': comment.id,
@@ -32,10 +41,3 @@ class Post(models.Model):
             ],
             "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p")
         }
-
-
-class Comments(models.Model):
-    user_id = models.ForeignKey(
-        "User", on_delete=models.CASCADE, related_name="comments")
-    text = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
