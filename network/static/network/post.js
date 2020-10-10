@@ -35,30 +35,45 @@ function load_page(page) {
   fetch(`/posts/${page}`)
     .then(response => response.json())
     .then(posts => {
+      console.log(posts);
+      const post_card_template = document.querySelector('#post-card-template');
       posts.forEach(post => {
-        const post_card = document.createElement('div');
-        const post_user = document.createElement('div');
-        const post_timestamp = document.createElement('div');
-        const post_text = document.createElement('div');
-        const post_likes = document.createElement('div');
+        var clone_post_card = post_card_template.cloneNode(true);
 
-        post_card.classList.add('col', 'shadow-lg', 'p-3', 'mb-5', 'bg-white', 'rounded');
-        post_user.classList.add('row', 'mx-3', 'font-weight-bold');
-        post_timestamp.classList.add('row', 'mx-3', 'text-secondary', 'small');
-        post_text.classList.add('row', 'mx-3', 'my-2');
-        post_likes.classList.add('row', 'mx-3', 'small');
+        var clone_post_user = clone_post_card.querySelector('#post-user');
+        var clone_post_timestamp = clone_post_card.querySelector('#post-timestamp');
+        var clone_post_text = clone_post_card.querySelector('#post-text');
+        var clone_post_likes = clone_post_card.querySelector('#post-likes');
+        var clone_post_comments = clone_post_card.querySelector('#post-comments');
 
-        post_user.innerHTML = post.poster;
-        post_timestamp.innerHTML = post.timestamp;
-        post_text.innerHTML = post.text.replace(/\n/g, '<br>');
-        post_likes.innerHTML = post.likes;
+        clone_post_user.innerHTML = post.poster;
+        clone_post_timestamp.innerHTML = post.timestamp;
+        clone_post_text.innerHTML = post.text.replace(/\n/g, '<br>');
+        clone_post_comments.innerHTML = `Comments ${post.comments}`;
+        clone_post_likes.innerHTML = post.check_liked ? `Unlike ${post.likes}` : `Like ${post.likes}`;
 
-        post_card.appendChild(post_user);
-        post_card.appendChild(post_timestamp);
-        post_card.appendChild(post_text);
-        post_card.appendChild(post_likes);
-        post_view.appendChild(post_card);
+        post_view.appendChild(clone_post_card);
+
+        const csrftoken = getCookie('csrftoken');
+
+        clone_post_likes.onclick = () => {
+          fetch(`/posts/${post.id}`, {
+            headers: { 'X-CSRFToken': csrftoken },
+            method: 'PUT',
+            body: JSON.stringify({
+              like: !post.check_liked
+            })
+          })
+            .then(response => response.json())
+            .then(result => {
+              post.check_liked = result.check_liked;
+              post.likes = result.likes;
+              clone_post_likes.innerHTML = result.check_liked ? `Unlike ${post.likes}` : `Like ${post.likes}`;
+            })
+        }
+
       })
+      post_card_template.parentNode.removeChild(post_card_template);
     })
 }
 

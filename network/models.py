@@ -31,6 +31,23 @@ class Posts(models.Model):
             "poster": self.user_id.username,
             "text": self.text,
             "likes": len(self.likes.all()),
+            "comments": len(self.comments_id.all()),
+            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
+        }
+
+    def serialize(self, username):
+        return {
+            "id": self.id,
+            "poster": self.user_id.username,
+            "text": self.text,
+            "likes": len(self.likes.all()),
+            "comments": len(self.comments_id.all()),
+            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
+            "check_liked": self.likes.filter(username=username).exists()
+        }
+
+    def get_comments(self):
+        return {
             "comments": [
                 {
                     'id': comment.id,
@@ -38,6 +55,5 @@ class Posts(models.Model):
                     "text": comment.text,
                     "timestamp": comment.timestamp
                 } for comment in self.comments_id.all()
-            ],
-            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p")
+            ]
         }

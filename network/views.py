@@ -67,7 +67,6 @@ def register(request):
         return render(request, "network/register.html")
 
 
-@csrf_exempt
 @login_required(login_url="login")
 def posts(request):
     if request.method == "POST":
@@ -81,7 +80,6 @@ def posts(request):
     return JsonResponse({"message": "Post network successfully."}, status=201)
 
 
-@csrf_exempt
 @login_required(login_url="login")
 def page(request, page):
 
@@ -93,5 +91,34 @@ def page(request, page):
 
     # Return posts in reverse chronologial order
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
-    # return JsonResponse([posts[0]], safe=False)
+    return JsonResponse([post.serialize(request.user) for post in posts], safe=False)
+
+
+@login_required(login_url="login")
+def post(request, post_id):
+    # Query for requested post
+    try:
+        post = Posts.objects.get(pk=post_id)
+    except Posts.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
+
+    # Return post contents
+    if request.method == "GET":
+        return JsonResponse([post.serialize(), post.get_comments], safe=False)
+
+    # Update whether post like/unlike
+    elif request.method == "PUT":
+        data = json.loads(request.body)
+        if data.get("like") is not None:
+            if data["like"]:
+                post.likes.add(request.user)
+            else:
+                post.likes.remove(request.user)
+        post.save()
+        return JsonResponse({key: post.serialize(request.user)[key] for key in ["likes", "check_liked"]})
+
+    # Post must be via GET or PUT
+    else:
+        return JsonResponse({
+            "error": "GET or PUT request required."
+        }, status=400)
