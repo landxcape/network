@@ -35,7 +35,6 @@ function load_page(page) {
   fetch(`/posts/${page}`)
     .then(response => response.json())
     .then(posts => {
-      console.log(posts);
       const post_card_template = document.querySelector('#post-card-template');
       posts.forEach(post => {
         var clone_post_card = post_card_template.cloneNode(true);
@@ -86,23 +85,43 @@ function load_page(page) {
           if (clone_post_comment_form.style.display === 'none') {
             clone_post_comments.classList.add('shadow-sm');
             clone_post_comment_form.style.display = 'block';
+            clone_post_all_comments.style.display = 'block';
+
+            clone_post_comment_form.querySelector('#compose-form').onsubmit = () => {
+              console.log(clone_post_comment_form.querySelector('#comment-text').value)
+              fetch(`/posts/${post.id}`, {
+                headers: { 'X-CSRFToken': csrftoken },
+                method: 'PUT',
+                body: JSON.stringify({
+                  'comment': clone_post_comment_form.querySelector('#comment-text').value
+                })
+              })
+                .then(response => response.json())
+                .then(result => {
+                  console.log(result)
+                })
+              return false;
+            }
 
             fetch(`/posts/${post.id}`)
               .then(response => response.json())
               .then(post_contents => {
-                console.log(post_contents);
-                post_contents.comments.coforEach(comment => {
-                  var comment_row = clone_post_all_comments.querySelector('div');
+                console.log("post_contents");
+                console.log(post_contents.all_comments);
+                const comment_row_template = clone_post_all_comments.querySelector('#comment-row-template');
+                post_contents.all_comments.reverse().forEach(comment => {
+                  var comment_row = comment_row_template.cloneNode(true);
 
-                  comment_row.innerHTML = comment;
+                  comment_row.innerHTML = comment.text;
                   clone_post_all_comments.appendChild(comment_row);
                 })
-                comment_row.parentNode.removeChild(comment_row);
+                comment_row_template.parentNode.removeChild(comment_row_template);
               })
           }
           else {
             clone_post_comments.classList.remove('shadow-sm');
             clone_post_comment_form.style.display = 'none';
+            clone_post_all_comments.style.display = 'none';
           }
         }
       })

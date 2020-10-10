@@ -38,7 +38,7 @@ class Posts(models.Model):
 
     def get_comments(self):
         return {
-            "comments": [
+            "all_comments": [
                 {
                     'id': comment.id,
                     "username": comment.user_id.username,
