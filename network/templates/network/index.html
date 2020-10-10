@@ -26,13 +26,33 @@
 
   <div id="post-view" class="my-5">
     <div id="post-card-template" class="col shadow-lg p-3 mb-5 bg-white rounded">
-      <div id="post-user" class="row mx-3 font-weight-bold"></div>
+      <a id="post-user" class="row mx-3 font-weight-bold"></a>
       <div id="post-timestamp" class="row mx-3 text-secondary small"></div>
       <div id="post-text" class="row mx-3 my-2"></div>
       <button id="post-likes" class="btn btn-link mx-2 btn-sm"></button>
       <button id="post-comments" class="btn btn-link mx-2 btn-sm"></button>
+
+      <div id="comment-form" class="shadow-sm p-3 bg-white rounded" style="display: none;">
+        <form id="compose-form">
+          <div class="form-group">
+            <textarea class="form-control" id="comment-text" placeholder="Comment..." required></textarea>
+          </div>
+          <div class="d-flex justify-content-end">
+            <input type="submit" class="btn btn-primary btn-sm" value="Comment">
+          </div>
+        </form>
+      </div>
+      <hr>
+
+      <div id="post-all-comments" class="col">
+        <div class="row"></div>
+      </div>
     </div>
   </div>
+
+  <div id="profile-view" class="my-5">
+  </div>
+
 </div>
 
 {% endblock %}

@@ -45,12 +45,14 @@ function load_page(page) {
         var clone_post_text = clone_post_card.querySelector('#post-text');
         var clone_post_likes = clone_post_card.querySelector('#post-likes');
         var clone_post_comments = clone_post_card.querySelector('#post-comments');
+        var clone_post_comment_form = clone_post_card.querySelector('#comment-form');
+        var clone_post_all_comments = clone_post_card.querySelector('#post-all-comments');
 
         clone_post_user.innerHTML = post.poster;
         clone_post_timestamp.innerHTML = post.timestamp;
         clone_post_text.innerHTML = post.text.replace(/\n/g, '<br>');
-        clone_post_comments.innerHTML = `Comments ${post.comments}`;
         clone_post_likes.innerHTML = post.check_liked ? `Unlike ${post.likes}` : `Like ${post.likes}`;
+        clone_post_comments.innerHTML = `Comments ${post.comments}`;
 
         post_view.appendChild(clone_post_card);
 
@@ -72,6 +74,37 @@ function load_page(page) {
             })
         }
 
+        clone_post_user.onclick = () => {
+          fetch(`/profile/${post.poster}`)
+            .then(response => response.json())
+            .then(profile => {
+              console.log(profile);
+            })
+        }
+
+        clone_post_comments.onclick = () => {
+          if (clone_post_comment_form.style.display === 'none') {
+            clone_post_comments.classList.add('shadow-sm');
+            clone_post_comment_form.style.display = 'block';
+
+            fetch(`/posts/${post.id}`)
+              .then(response => response.json())
+              .then(post_contents => {
+                console.log(post_contents);
+                post_contents.comments.coforEach(comment => {
+                  var comment_row = clone_post_all_comments.querySelector('div');
+
+                  comment_row.innerHTML = comment;
+                  clone_post_all_comments.appendChild(comment_row);
+                })
+                comment_row.parentNode.removeChild(comment_row);
+              })
+          }
+          else {
+            clone_post_comments.classList.remove('shadow-sm');
+            clone_post_comment_form.style.display = 'none';
+          }
+        }
       })
       post_card_template.parentNode.removeChild(post_card_template);
     })
@@ -97,6 +130,10 @@ function post_network() {
       console.log(result);
       () => load_page('all_posts');
     })
+}
+
+function load_profile(username) {
+
 }
 
 function getCookie(name) {

@@ -102,9 +102,11 @@ def post(request, post_id):
     except Posts.DoesNotExist:
         return JsonResponse({"error": "Post not found."}, status=404)
 
+    post.comments_id.set(post.comments_id.order_by("-timestamp").all())
     # Return post contents
     if request.method == "GET":
-        return JsonResponse([post.serialize(), post.get_comments], safe=False)
+        return JsonResponse(post.serialize(request.user) |
+                            post.get_comments(), safe=False)
 
     # Update whether post like/unlike
     elif request.method == "PUT":
@@ -122,3 +124,12 @@ def post(request, post_id):
         return JsonResponse({
             "error": "GET or PUT request required."
         }, status=400)
+
+
+def profile(request, username):
+    posts = Posts.objects.filter(user_id=User.objects.get(username=username))
+    posts.order_by("-timestamp").all()
+    return JsonResponse({
+        "username": username,
+        "posts": [post.serialize(request.user) for post in posts],
+    })

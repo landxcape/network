@@ -25,16 +25,6 @@ class Posts(models.Model):
         "Comments", blank=True, related_name="post_id")
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "poster": self.user_id.username,
-            "text": self.text,
-            "likes": len(self.likes.all()),
-            "comments": len(self.comments_id.all()),
-            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
-        }
-
     def serialize(self, username):
         return {
             "id": self.id,
