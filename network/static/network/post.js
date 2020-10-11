@@ -88,7 +88,6 @@ function load_page(page) {
             clone_post_all_comments.style.display = 'block';
 
             clone_post_comment_form.querySelector('#compose-form').onsubmit = () => {
-              console.log(clone_post_comment_form.querySelector('#comment-text').value)
               fetch(`/posts/${post.id}`, {
                 headers: { 'X-CSRFToken': csrftoken },
                 method: 'PUT',
@@ -98,30 +97,51 @@ function load_page(page) {
               })
                 .then(response => response.json())
                 .then(result => {
-                  console.log(result)
+                  try {
+                    clone_post_all_comments.removeChild(document.querySelector('#comments_col'));
+                  } catch (error) { }
+                  show_comments();
+                  clone_post_comment_form.querySelector('#comment-text').value = '';
                 })
               return false;
             }
 
-            fetch(`/posts/${post.id}`)
-              .then(response => response.json())
-              .then(post_contents => {
-                console.log("post_contents");
-                console.log(post_contents.all_comments);
-                const comment_row_template = clone_post_all_comments.querySelector('#comment-row-template');
-                post_contents.all_comments.reverse().forEach(comment => {
-                  var comment_row = comment_row_template.cloneNode(true);
+            show_comments();
 
-                  comment_row.innerHTML = comment.text;
-                  clone_post_all_comments.appendChild(comment_row);
+            function show_comments() {
+              fetch(`/posts/${post.id}`)
+                .then(response => response.json())
+                .then(post_contents => {
+
+                  // show comments
+                  const comments_col = document.createElement('div');
+                  comments_col.classList.add('col');
+                  comments_col.id = 'comments_col';
+                  post_contents.all_comments.reverse().forEach(comment => {
+                    var comment_col = document.createElement('div');
+                    comment_col.classList.add('col', 'shadow-sm');
+
+                    var comment_row_text = document.createElement('p');
+                    comment_row_text.innerHTML = comment.text.replace(/\n/g, '<br>');
+
+                    var comment_row_timestamp = document.createElement('div');
+                    comment_row_timestamp.classList.add('d-flex', 'justify-content-end', 'text-secondary', 'small');
+                    comment_row_timestamp.innerHTML = comment.timestamp;
+
+                    comment_col.appendChild(comment_row_text);
+                    comment_col.appendChild(comment_row_timestamp);
+
+                    comments_col.appendChild(comment_col);
+                  })
+                  clone_post_all_comments.appendChild(comments_col);
+                  clone_post_comments.innerHTML = `Comments ${post_contents.comments}`;
                 })
-                comment_row_template.parentNode.removeChild(comment_row_template);
-              })
+            }
           }
           else {
             clone_post_comments.classList.remove('shadow-sm');
             clone_post_comment_form.style.display = 'none';
-            clone_post_all_comments.style.display = 'none';
+            clone_post_all_comments.removeChild(document.querySelector('#comments_col'));
           }
         }
       })
@@ -135,7 +155,6 @@ function post_network() {
 
   const csrftoken = getCookie('csrftoken');
 
-  console.log(post_text.value);
 
   fetch('/posts', {
     headers: { 'X-CSRFToken': csrftoken },
@@ -146,7 +165,6 @@ function post_network() {
   })
     .then(response => response.json())
     .then(result => {
-      console.log(result);
       () => load_page('all_posts');
     })
 }

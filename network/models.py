@@ -43,7 +43,7 @@ class Posts(models.Model):
                     'id': comment.id,
                     "username": comment.user_id.username,
                     "text": comment.text,
-                    "timestamp": comment.timestamp
+                    "timestamp": comment.timestamp.strftime("%b %d %Y, %I:%M %p")
                 } for comment in self.comments_id.all()
             ]
         }
