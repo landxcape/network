@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+  document.querySelector('#username').addEventListener('click', () => load_profile({ 'username': document.querySelector('#username').querySelector('strong').innerHTML }))
+
   load_page('all_posts');
 });
 
@@ -138,7 +140,7 @@ function load_page(page) {
             .then(response => response.json())
             .then(profile => {
               console.log(profile);
-              load_profile(post.poster);
+              load_profile(profile);
             })
         }
 
@@ -237,13 +239,24 @@ function post_network() {
     })
 }
 
-function load_profile(username) {
+function load_profile(profile) {
+  document.querySelector('#post-button').style.display = 'none';
   document.querySelector('#post-form').style.display = 'none';
   document.querySelector('#post-view').style.display = 'none';
   document.querySelector('#profile-view').style.display = 'block';
 
-  const profile = document.querySelector('#profile-username');
-  profile.innerHTML = username;
+  const profile_username = document.querySelector('#profile-username');
+  profile_username.querySelector('h1').innerHTML = profile.username;
+
+
+  const follow_bar = document.querySelector('#profile-follow');
+  follow_bar.classList.add('row');
+
+  const follow_bar_button = document.createElement('button');
+  follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
+  follow_bar_button.innerHTML = 'Follow +';
+
+  follow_bar.appendChild(follow_bar_button);
 }
 
 
