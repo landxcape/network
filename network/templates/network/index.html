@@ -16,7 +16,8 @@
         </button>
       </div>
       <div class="form-group">
-        <textarea class="form-control" id="post-text" placeholder="What's on your mind?"></textarea>
+        <textarea class="form-control" id="post-text" placeholder="What's on your mind?"
+          style="min-height: 10em; max-height: 50vh;"></textarea>
       </div>
       <div class="d-flex justify-content-end">
         <input type="submit" class="btn btn-primary" value="Post">
@@ -28,7 +29,10 @@
     <div id="post-card-template" class="col shadow-lg p-3 mb-5 bg-white rounded">
       <a id="post-user" class="row mx-3 font-weight-bold"></a>
       <div id="post-timestamp" class="row mx-3 text-secondary small"></div>
-      <div id="post-text" class="row mx-3 my-2"></div>
+      <div class="mx-3 my-2">
+        <button id="post-text-edit" class="btn btn-link mx-0 btn-sm" style="float: right;">edit</button>
+        <div id="post-text" class="row mx-2"></div>
+      </div>
       <button id="post-likes" class="btn btn-link mx-2 btn-sm"></button>
       <button id="post-comments" class="btn btn-link mx-2 btn-sm"></button>
 
@@ -42,7 +46,6 @@
           </div>
         </form>
       </div>
-      <hr>
 
       <div id="post-all-comments" class="container">
       </div>

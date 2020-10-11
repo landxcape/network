@@ -36,12 +36,14 @@ function load_page(page) {
     .then(response => response.json())
     .then(posts => {
       const post_card_template = document.querySelector('#post-card-template');
+      post_card_template.style.display = 'block';
       posts.forEach(post => {
         var clone_post_card = post_card_template.cloneNode(true);
 
         var clone_post_user = clone_post_card.querySelector('#post-user');
         var clone_post_timestamp = clone_post_card.querySelector('#post-timestamp');
         var clone_post_text = clone_post_card.querySelector('#post-text');
+        var clone_post_text_edit = clone_post_card.querySelector('#post-text-edit');
         var clone_post_likes = clone_post_card.querySelector('#post-likes');
         var clone_post_comments = clone_post_card.querySelector('#post-comments');
         var clone_post_comment_form = clone_post_card.querySelector('#comment-form');
@@ -56,6 +58,35 @@ function load_page(page) {
         post_view.appendChild(clone_post_card);
 
         const csrftoken = getCookie('csrftoken');
+
+        if (document.querySelector('#username').querySelector('strong').innerHTML === post.poster) {
+          clone_post_text_edit.onclick = () => {
+            if (clone_post_text_edit.parentNode.querySelector('#post-edit-form')) {
+              clone_post_text.style.display = 'block';
+              clone_post_text_edit.parentNode.removeChild(clone_post_text_edit.parentNode.querySelector('#post-edit-form'))
+            } else {
+              var post_edit_form = document.createElement('form');
+              post_edit_form.id = 'post-edit-form';
+
+              var post_edit_form_group = document.createElement('div');
+              post_edit_form_group.classList.add('form-group');
+
+              var post_edit_form_group_textarea = document.createElement('textarea');
+              post_edit_form_group_textarea.id = 'post-edit-text';
+              post_edit_form_group_textarea.classList.add('form-control');
+              post_edit_form_group_textarea.rows = "5";
+              post_edit_form_group_textarea.value = post.text;
+              post_edit_form_group.appendChild(post_edit_form_group_textarea);
+
+              post_edit_form.appendChild(post_edit_form_group);
+              clone_post_text_edit.parentNode.appendChild(post_edit_form);
+
+              clone_post_text.style.display = 'none';
+            }
+          }
+        } else {
+          clone_post_text_edit.parentNode.removeChild(clone_post_text_edit)
+        }
 
         clone_post_likes.onclick = () => {
           fetch(`/posts/${post.id}`, {
@@ -117,6 +148,8 @@ function load_page(page) {
                   const comments_col = document.createElement('div');
                   comments_col.classList.add('col');
                   comments_col.id = 'comments_col';
+                  comments_col.appendChild(document.createElement('hr'));
+
                   post_contents.all_comments.reverse().forEach(comment => {
                     var comment_col = document.createElement('div');
                     comment_col.classList.add('col', 'shadow-sm');
@@ -145,7 +178,7 @@ function load_page(page) {
           }
         }
       })
-      post_card_template.parentNode.removeChild(post_card_template);
+      post_card_template.style.display = 'none';
     })
 }
 
