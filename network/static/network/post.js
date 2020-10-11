@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function post_form() {
   document.querySelector('#post-view').style.display = 'block';
+  document.querySelector('#profile-view').style.display = 'none';
 
   const post_button = document.querySelector('#post-button');
   const post_form = document.querySelector('#post-form');
@@ -24,6 +25,8 @@ function post_form() {
 function load_page(page) {
   document.querySelector('#post-text').value = '';
   document.querySelector('#post-form').style.display = 'none';
+  document.querySelector('#profile-view').style.display = 'none';
+
 
   const post_button = document.querySelector('#post-button');
   const post_view = document.querySelector('#post-view');
@@ -59,6 +62,7 @@ function load_page(page) {
         post_view.appendChild(clone_post_card);
 
         const csrftoken = getCookie('csrftoken');
+
 
         if (document.querySelector('#username').querySelector('strong').innerHTML === post.poster) {
           clone_post_text_edit.onclick = () => {
@@ -134,6 +138,7 @@ function load_page(page) {
             .then(response => response.json())
             .then(profile => {
               console.log(profile);
+              load_profile(post.poster);
             })
         }
 
@@ -233,7 +238,12 @@ function post_network() {
 }
 
 function load_profile(username) {
+  document.querySelector('#post-form').style.display = 'none';
+  document.querySelector('#post-view').style.display = 'none';
+  document.querySelector('#profile-view').style.display = 'block';
 
+  const profile = document.querySelector('#profile-username');
+  profile.innerHTML = username;
 }
 
 
