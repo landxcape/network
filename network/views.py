@@ -109,11 +109,13 @@ def post(request, post_id):
     # Update whether post like/unlike
     elif request.method == "PUT":
         data = json.loads(request.body)
+        keys = []
         if data.get("like") is not None:
             if data["like"]:
                 post.likes.add(request.user)
             else:
                 post.likes.remove(request.user)
+            keys = ["likes", "check_liked"]
         elif data.get("comment") is not None:
             comment = Comments(
                 user_id=request.user,
@@ -122,9 +124,12 @@ def post(request, post_id):
             comment.save()
             post.comments_id.add(comment)
             post.save()
-            return JsonResponse({"message": f"this is comment {data['comment']}"} | post.get_comments())
+            return JsonResponse(post.get_comments())
+        elif data.get("text") is not None and request.user.username == post.user_id.username:
+            post.text = data["text"]
+            keys = ["text"]
         post.save()
-        return JsonResponse({key: post.serialize(request.user)[key] for key in ["likes", "check_liked"]})
+        return JsonResponse({key: post.serialize(request.user)[key] for key in keys})
 
     # Post must be via GET or PUT
     else:

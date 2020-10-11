@@ -49,6 +49,7 @@ function load_page(page) {
         var clone_post_comment_form = clone_post_card.querySelector('#comment-form');
         var clone_post_all_comments = clone_post_card.querySelector('#post-all-comments');
 
+
         clone_post_user.innerHTML = post.poster;
         clone_post_timestamp.innerHTML = post.timestamp;
         clone_post_text.innerHTML = post.text.replace(/\n/g, '<br>');
@@ -76,12 +77,35 @@ function load_page(page) {
               post_edit_form_group_textarea.classList.add('form-control');
               post_edit_form_group_textarea.rows = "5";
               post_edit_form_group_textarea.value = post.text;
+              post_edit_form_group_textarea.required = true;
               post_edit_form_group.appendChild(post_edit_form_group_textarea);
 
+              var post_edit_form_button_div = document.createElement('div');
+              post_edit_form_button_div.classList.add('d-flex', 'justify-content-end');
+
+              var post_edit_form_button = document.createElement('button');
+              post_edit_form_button.classList.add('btn', 'btn-success', 'btn-sm');
+
+              post_edit_form_button.innerHTML = 'Save';
+              post_edit_form_button_div.appendChild(post_edit_form_button);
+
               post_edit_form.appendChild(post_edit_form_group);
+              post_edit_form.appendChild(post_edit_form_button_div);
               clone_post_text_edit.parentNode.appendChild(post_edit_form);
 
               clone_post_text.style.display = 'none';
+
+              post_edit_form.onsubmit = () => {
+                fetch(`/posts/${post.id}`, {
+                  headers: { 'X-CSRFToken': csrftoken },
+                  method: 'PUT',
+                  body: JSON.stringify({
+                    'text': post_edit_form_group_textarea.value
+                  })
+                })
+                  .then(response => response.json())
+                  .then(result => { })
+              };
             }
           }
         } else {
@@ -101,6 +125,7 @@ function load_page(page) {
               post.check_liked = result.check_liked;
               post.likes = result.likes;
               clone_post_likes.innerHTML = result.check_liked ? `Unlike ${post.likes}` : `Like ${post.likes}`;
+              console.log(result)
             })
         }
 
@@ -154,13 +179,18 @@ function load_page(page) {
                     var comment_col = document.createElement('div');
                     comment_col.classList.add('col', 'shadow-sm');
 
+                    var comment_commentor = document.createElement('div');
+                    comment_commentor.classList.add('row', 'mx-0', 'font-weight-bold');
+                    comment_commentor.innerHTML = comment.username;
+
                     var comment_row_text = document.createElement('p');
                     comment_row_text.innerHTML = comment.text.replace(/\n/g, '<br>');
 
                     var comment_row_timestamp = document.createElement('div');
                     comment_row_timestamp.classList.add('d-flex', 'justify-content-end', 'text-secondary', 'small');
-                    comment_row_timestamp.innerHTML = comment.timestamp;
+                    comment_row_timestamp.innerHTML = Date(comment.timestamp);
 
+                    comment_col.appendChild(comment_commentor);
                     comment_col.appendChild(comment_row_text);
                     comment_col.appendChild(comment_row_timestamp);
 
@@ -205,6 +235,7 @@ function post_network() {
 function load_profile(username) {
 
 }
+
 
 function getCookie(name) {
   let cookieValue = null;
