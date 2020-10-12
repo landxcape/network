@@ -75,6 +75,11 @@ function load_profile(profile) {
   profile_username.querySelector('h1').innerHTML = profile.username;
 
 
+  try {
+    profile_view.removeChild(document.querySelector('#profile-container'))
+  } catch (error) { }
+
+
   if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
     const follow_bar = document.querySelector('#profile-follow');
     follow_bar.classList.add('row');
@@ -107,8 +112,6 @@ function load_profile(profile) {
 
 
 function show_posts(page, post_view) {
-
-
   fetch(`/posts/${page}`)
     .then(response => response.json())
     .then(posts => {
@@ -211,7 +214,6 @@ function show_posts(page, post_view) {
           fetch(`/profile/${post.poster}`)
             .then(response => response.json())
             .then(profile => {
-              console.log(profile);
               load_profile(profile);
             })
         }
