@@ -87,10 +87,10 @@ def page(request, page):
     if page == "all_posts":
         posts = Posts.objects.all()
     elif page.split('-')[0] == 'username':
-        posts = Posts.objects.filter(
+        posts_user = Posts.objects.filter(
             user_id=User.objects.get(username=page.split('-')[1]))
-        posts.order_by("-timestamp").all()
-        return JsonResponse([post.serialize(request.user) for post in posts], safe=False)
+        posts_user = posts_user.order_by("-timestamp").all()
+        return JsonResponse([post.serialize(request.user) for post in posts_user], safe=False)
     else:
         return JsonResponse({"error": "Invalid page."}, status=400)
 
