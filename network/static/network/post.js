@@ -31,11 +31,83 @@ function load_page(page) {
 
 
   const post_button = document.querySelector('#post-button');
-  const post_view = document.querySelector('#post-view');
   post_button.style.display = 'block';
+  const post_view = document.querySelector('#post-view');
   post_view.style.display = 'block';
 
   post_button.onclick = () => post_form();
+
+  show_posts(page, post_view);
+}
+
+function post_network() {
+  const compose_form = document.querySelector('#compose-form');
+  const post_text = compose_form.querySelector('#post-text');
+
+  const csrftoken = getCookie('csrftoken');
+
+
+  fetch('/posts', {
+    headers: { 'X-CSRFToken': csrftoken },
+    method: 'POST',
+    body: JSON.stringify({
+      post_text: post_text.value,
+    })
+  })
+    .then(response => response.json())
+    .then(result => {
+      () => load_page('all_posts');
+    })
+}
+
+function load_profile(profile) {
+  document.querySelector('#post-button').style.display = 'none';
+  document.querySelector('#post-form').style.display = 'none';
+  document.querySelector('#post-view').style.display = 'none';
+
+  const profile_view = document.querySelector('#profile-view');
+  const profile_username = document.querySelector('#profile-username');
+  const profile_posts = document.querySelector('#profile-posts');
+  const profile_followers = document.querySelector('#profile-followers');
+  const profile_following = document.querySelector('#profile-following');
+
+  profile_view.style.display = 'block';
+  profile_username.querySelector('h1').innerHTML = profile.username;
+
+
+  if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
+    const follow_bar = document.querySelector('#profile-follow');
+    follow_bar.classList.add('row');
+
+
+    const follow_bar_button = document.createElement('button');
+    follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
+    follow_bar_button.innerHTML = 'Follow +';
+
+    follow_bar.appendChild(follow_bar_button);
+  } else {
+    try {
+      document.querySelector('#profile-follow').parentNode.removeChild(document.querySelector('#profile-follow'));
+    } catch (error) { }
+  }
+
+  profile_posts.onclick = () => {
+    try {
+      profile_view.removeChild(document.querySelector('#profile-container'))
+    } catch (error) { }
+
+    const profile_container = document.createElement('div');
+    profile_container.id = 'profile-container';
+    profile_container.classList.add('my-5');
+
+    profile_view.appendChild(profile_container);
+    show_posts(`username-${profile.username}`, profile_container);
+  }
+}
+
+
+function show_posts(page, post_view) {
+
 
   fetch(`/posts/${page}`)
     .then(response => response.json())
@@ -217,48 +289,8 @@ function load_page(page) {
       })
       post_card_template.style.display = 'none';
     })
+  return false;
 }
-
-function post_network() {
-  const compose_form = document.querySelector('#compose-form');
-  const post_text = compose_form.querySelector('#post-text');
-
-  const csrftoken = getCookie('csrftoken');
-
-
-  fetch('/posts', {
-    headers: { 'X-CSRFToken': csrftoken },
-    method: 'POST',
-    body: JSON.stringify({
-      post_text: post_text.value,
-    })
-  })
-    .then(response => response.json())
-    .then(result => {
-      () => load_page('all_posts');
-    })
-}
-
-function load_profile(profile) {
-  document.querySelector('#post-button').style.display = 'none';
-  document.querySelector('#post-form').style.display = 'none';
-  document.querySelector('#post-view').style.display = 'none';
-  document.querySelector('#profile-view').style.display = 'block';
-
-  const profile_username = document.querySelector('#profile-username');
-  profile_username.querySelector('h1').innerHTML = profile.username;
-
-
-  const follow_bar = document.querySelector('#profile-follow');
-  follow_bar.classList.add('row');
-
-  const follow_bar_button = document.createElement('button');
-  follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
-  follow_bar_button.innerHTML = 'Follow +';
-
-  follow_bar.appendChild(follow_bar_button);
-}
-
 
 function getCookie(name) {
   let cookieValue = null;

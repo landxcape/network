@@ -86,6 +86,11 @@ def page(request, page):
     # Filter posts returned based on mailbox
     if page == "all_posts":
         posts = Posts.objects.all()
+    elif page.split('-')[0] == 'username':
+        posts = Posts.objects.filter(
+            user_id=User.objects.get(username=page.split('-')[1]))
+        posts.order_by("-timestamp").all()
+        return JsonResponse([post.serialize(request.user) for post in posts], safe=False)
     else:
         return JsonResponse({"error": "Invalid page."}, status=400)
 
