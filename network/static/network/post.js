@@ -92,7 +92,7 @@ function load_profile(profile) {
   })
     .then(response => response.json())
     .then(counts => {
-      console.log(counts.posts_count);
+
       profile_posts.querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
       profile_followers.querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
       profile_following.querySelector('strong').innerHTML = `Following (${counts.following_count})`;
@@ -111,7 +111,7 @@ function load_profile(profile) {
     })
       .then(response => response.json())
       .then(message => {
-        console.log(message);
+
         if (message.follow_check) {
           follow_bar_button.innerHTML = 'Unfollow -';
         } else {
@@ -129,7 +129,7 @@ function load_profile(profile) {
       })
         .then(response => response.json())
         .then(message => {
-          console.log(message)
+
           if (message.follow_check) {
             follow_bar_button.innerHTML = 'Unfollow -';
           } else {
@@ -160,19 +160,17 @@ function load_profile(profile) {
 
 
 function show_posts(page, post_view) {
-  const post_view_temp = document.querySelector('#post-view');
-
   fetch(`/posts/${page}`)
     .then(response => response.json())
     .then(posts => {
-      console.log('prints')
-      console.log(posts)
       const post_card_template = document.querySelector('#post-card-template');
-      while (post_view_temp.childNodes.length > 1) {
-        post_view_temp.removeChild(post_view_temp.lastChild);
-      }
-
       post_card_template.style.display = 'block';
+
+      if (page === 'posts_following') {
+        while (post_view.childNodes.length > 1) {
+          post_view.removeChild(post_view.lastChild);
+        }
+      }
 
       posts.forEach(post => {
         var clone_post_card = post_card_template.cloneNode(true);
@@ -264,7 +262,7 @@ function show_posts(page, post_view) {
               post.check_liked = result.check_liked;
               post.likes = result.likes;
               clone_post_likes.innerHTML = result.check_liked ? `Unlike ${post.likes}` : `Like ${post.likes}`;
-              console.log(result)
+
             })
         }
 
