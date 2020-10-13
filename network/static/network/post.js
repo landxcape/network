@@ -61,6 +61,24 @@ function post_network() {
     })
 }
 
+function update_count(username) {
+  const csrftoken = getCookie('csrftoken');
+
+  fetch(`/profile/${username}`, {
+    headers: { 'X-CSRFToken': csrftoken },
+    method: 'POST',
+    body: JSON.stringify({
+      "get_counts": username
+    })
+  })
+    .then(response => response.json())
+    .then(counts => {
+      document.querySelector('#profile-posts').querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
+      document.querySelector('#profile-followers').querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
+      document.querySelector('#profile-following').querySelector('strong').innerHTML = `Following (${counts.following_count})`;
+    })
+}
+
 function load_profile(profile) {
   document.querySelector('#post-button').style.display = 'none';
   document.querySelector('#post-form').style.display = 'none';
@@ -83,20 +101,7 @@ function load_profile(profile) {
   } catch (error) { }
 
 
-  fetch(`/profile/${profile.username}`, {
-    headers: { 'X-CSRFToken': csrftoken },
-    method: 'POST',
-    body: JSON.stringify({
-      "get_counts": profile.username
-    })
-  })
-    .then(response => response.json())
-    .then(counts => {
-
-      profile_posts.querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
-      profile_followers.querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
-      profile_following.querySelector('strong').innerHTML = `Following (${counts.following_count})`;
-    })
+  update_count(profile.username);
 
   if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
     const follow_bar_button = document.querySelector('#profile-follow-button');
@@ -129,12 +134,18 @@ function load_profile(profile) {
       })
         .then(response => response.json())
         .then(message => {
+          update_count(profile.username);
+
+          try {
+            profile_view.removeChild(document.querySelector('#profile-container'))
+          } catch (error) { }
 
           if (message.follow_check) {
             follow_bar_button.innerHTML = 'Unfollow -';
           } else {
             follow_bar_button.innerHTML = 'Follow +';
           }
+
         })
       return false;
     }
@@ -156,6 +167,64 @@ function load_profile(profile) {
     profile_view.appendChild(profile_container);
     show_posts(`username-${profile.username}`, profile_container);
   }
+
+  profile_followers.onclick = () => {
+    try {
+      profile_view.removeChild(document.querySelector('#profile-container'))
+    } catch (error) { }
+
+    const profile_container = document.createElement('div');
+    profile_container.id = 'profile-container';
+    profile_container.classList.add('my-5');
+
+    profile_view.appendChild(profile_container);
+
+    show_follows(profile.username, 'get_followers', profile_container);
+  }
+
+  profile_following.onclick = () => {
+    try {
+      profile_view.removeChild(document.querySelector('#profile-container'))
+    } catch (error) { }
+
+    const profile_container = document.createElement('div');
+    profile_container.id = 'profile-container';
+    profile_container.classList.add('my-5');
+
+    profile_view.appendChild(profile_container);
+
+    show_follows(profile.username, 'get_followings', profile_container);
+  }
+}
+
+function show_follows(username, get_follow, profile_container) {
+  const follows_col = document.createElement('div');
+  follows_col.classList.add('col');
+  follows_col.appendChild(document.createElement('hr'));
+
+  const csrftoken = getCookie('csrftoken');
+
+  fetch(`/profile/${username}`, {
+    headers: { 'X-CSRFToken': csrftoken },
+    method: 'POST',
+    body: JSON.stringify({
+      "get_follow": get_follow
+    })
+  })
+    .then(response => response.json())
+    .then(follows => {
+      follows.forEach(follow => {
+        const follow_row = document.createElement('div');
+        follow_row.classList.add('row');
+
+        console.log(follow);
+        follow_row.innerHTML = follow;
+
+        follows_col.appendChild(follow_row);
+        follows_col.appendChild(document.createElement('hr'));
+      })
+    })
+  profile_container.appendChild(follows_col);
 }
 
 

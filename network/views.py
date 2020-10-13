@@ -180,6 +180,15 @@ def profile(request, username):
                 "user": User.objects.get(username=request.user.username).serialize(),
                 "follow_check": user.followings.filter(username=data["follow"]).exists()
             })
+        elif data.get("get_follow"):
+            if data["get_follow"] == "get_followers":
+                follows = User.objects.get(
+                    username=username).followers.all()
+            elif data["get_follow"] == "get_followings":
+                follows = User.objects.get(
+                    username=username).followings.all()
+            follows = [follow.username for follow in follows]
+            return JsonResponse(follows, safe=False)
         else:
             return JsonResponse({"error": "invalid request"})
 
