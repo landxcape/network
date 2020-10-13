@@ -3,9 +3,16 @@ from django.db import models
 
 
 class User(AbstractUser):
-    # following = models.ManyToManyField(
-    #     "User", blank=True, related_name="followers")
-    pass
+    followings = models.ManyToManyField(
+        "User", blank=True, null=True, related_name="followers")
+
+    def serialize(self):
+        return {
+            "follower": self.username,
+            "followings": [{
+                "following": following.username
+            } for following in self.followings.all()],
+        }
 
 
 class Comments(models.Model):

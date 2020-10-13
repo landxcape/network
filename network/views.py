@@ -86,6 +86,9 @@ def page(request, page):
     # Filter posts returned based on mailbox
     if page == "all_posts":
         posts = Posts.objects.all()
+    elif page == "posts_following":
+        posts = Posts.objects.filter(user_id__followers=(
+            User.objects.get(username=request.user.username)))
     elif page.split('-')[0] == 'username':
         posts_user = Posts.objects.filter(
             user_id=User.objects.get(username=page.split('-')[1]))
@@ -144,6 +147,42 @@ def post(request, post_id):
 
 
 def profile(request, username):
+    if request.method == "POST":
+        # Query for requested post
+        try:
+            user = User.objects.get(username=request.user.username)
+        except user.DoesNotExist:
+            return JsonResponse({"error": "user not found."}, status=404)
+
+        data = json.loads(request.body)
+        if data.get("follow_check") is not None:
+            return JsonResponse({
+                "follow_check": user.followings.filter(username=data["follow_check"]).exists()
+            })
+        elif data.get("get_counts") is not None:
+            return JsonResponse({
+                "posts_count": Posts.objects.filter(user_id=User.objects.get(username=username)).count(),
+                "following_count": user.followings.count(),
+                "followers_count": user.followers.count()
+            })
+        elif data.get("follow") is not None:
+            if user.followings.filter(username=data["follow"]).exists():
+                user.followings.remove(
+                    User.objects.get(username=data["follow"]))
+                message = "removed"
+            else:
+                user.followings.add(
+                    User.objects.get(username=data["follow"]))
+                message = "added"
+            return JsonResponse({
+                "follower": request.user.username,
+                "following": data["follow"],
+                "user": User.objects.get(username=request.user.username).serialize(),
+                "follow_check": user.followings.filter(username=data["follow"]).exists()
+            })
+        else:
+            return JsonResponse({"error": "invalid request"})
+
     posts = Posts.objects.filter(user_id=User.objects.get(username=username))
     posts.order_by("-timestamp").all()
     return JsonResponse({

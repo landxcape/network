@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelector('#username').addEventListener('click', () => load_profile({ 'username': document.querySelector('#username').querySelector('strong').innerHTML }))
+  document.querySelector('#username').addEventListener('click', () => load_profile({ 'username': document.querySelector('#username').querySelector('strong').innerHTML }));
+  document.querySelector('#posts-following').addEventListener('click', () => load_page('posts_following'));
 
   load_page('all_posts');
 });
@@ -81,18 +82,68 @@ function load_profile(profile) {
 
 
   if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
-    const follow_bar = document.querySelector('#profile-follow');
-    follow_bar.classList.add('row');
-
-
-    const follow_bar_button = document.createElement('button');
+    const follow_bar_button = document.querySelector('#profile-follow-button');
     follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
-    follow_bar_button.innerHTML = 'Follow +';
 
-    follow_bar.appendChild(follow_bar_button);
+    const csrftoken = getCookie('csrftoken');
+
+
+    fetch(`/profile/${profile.username}`, {
+      headers: { 'X-CSRFToken': csrftoken },
+      method: 'POST',
+      body: JSON.stringify({
+        "get_counts": profile.username
+      })
+    })
+      .then(response => response.json())
+      .then(counts => {
+        console.log(counts.posts_count);
+        profile_posts.querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
+        profile_followers.querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
+        profile_following.querySelector('strong').innerHTML = `Following (${counts.following_count})`;
+      })
+
+
+    fetch(`/profile/${profile.username}`, {
+      headers: { 'X-CSRFToken': csrftoken },
+      method: 'POST',
+      body: JSON.stringify({
+        "follow_check": profile.username
+      })
+    })
+      .then(response => response.json())
+      .then(message => {
+        console.log(message);
+        if (message.follow_check) {
+          follow_bar_button.innerHTML = 'Unfollow -';
+        } else {
+          follow_bar_button.innerHTML = 'Follow +';
+        }
+
+      })
+
+    follow_bar_button.onclick = () => {
+      fetch(`/profile/${profile.username}`, {
+        headers: { 'X-CSRFToken': csrftoken },
+        method: 'POST',
+        body: JSON.stringify({
+          "follow": profile.username
+        })
+      })
+        .then(response => response.json())
+        .then(message => {
+          console.log(message)
+          if (message.follow_check) {
+            follow_bar_button.innerHTML = 'Unfollow -';
+          } else {
+            follow_bar_button.innerHTML = 'Follow +';
+          }
+        })
+      return false;
+    }
   } else {
     try {
-      document.querySelector('#profile-follow').parentNode.removeChild(document.querySelector('#profile-follow'));
+      document.querySelector('#profile-follow-button').parentNode.removeChild(document.querySelector('#profile-follow-button'));
     } catch (error) { }
   }
 
@@ -112,11 +163,20 @@ function load_profile(profile) {
 
 
 function show_posts(page, post_view) {
+  const post_view_temp = document.querySelector('#post-view');
+
   fetch(`/posts/${page}`)
     .then(response => response.json())
     .then(posts => {
+      console.log('prints')
+      console.log(posts)
       const post_card_template = document.querySelector('#post-card-template');
+      while (post_view_temp.childNodes.length > 1) {
+        post_view_temp.removeChild(post_view_temp.lastChild);
+      }
+
       post_card_template.style.display = 'block';
+
       posts.forEach(post => {
         var clone_post_card = post_card_template.cloneNode(true);
 
@@ -139,7 +199,6 @@ function show_posts(page, post_view) {
         post_view.appendChild(clone_post_card);
 
         const csrftoken = getCookie('csrftoken');
-
 
         if (document.querySelector('#username').querySelector('strong').innerHTML === post.poster) {
           clone_post_text_edit.onclick = () => {
@@ -190,7 +249,9 @@ function show_posts(page, post_view) {
             }
           }
         } else {
-          clone_post_text_edit.parentNode.removeChild(clone_post_text_edit)
+          try {
+            clone_post_text_edit.parentNode.removeChild(clone_post_text_edit)
+          } catch (error) { }
         }
 
         clone_post_likes.onclick = () => {
