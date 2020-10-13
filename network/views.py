@@ -162,8 +162,8 @@ def profile(request, username):
         elif data.get("get_counts") is not None:
             return JsonResponse({
                 "posts_count": Posts.objects.filter(user_id=User.objects.get(username=username)).count(),
-                "following_count": user.followings.count(),
-                "followers_count": user.followers.count()
+                "following_count": User.objects.get(username=username).followings.count(),
+                "followers_count": User.objects.get(username=username).followers.count()
             })
         elif data.get("follow") is not None:
             if user.followings.filter(username=data["follow"]).exists():

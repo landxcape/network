@@ -75,34 +75,32 @@ function load_profile(profile) {
   profile_view.style.display = 'block';
   profile_username.querySelector('h1').innerHTML = profile.username;
 
+  const csrftoken = getCookie('csrftoken');
+
 
   try {
     profile_view.removeChild(document.querySelector('#profile-container'))
   } catch (error) { }
 
 
+  fetch(`/profile/${profile.username}`, {
+    headers: { 'X-CSRFToken': csrftoken },
+    method: 'POST',
+    body: JSON.stringify({
+      "get_counts": profile.username
+    })
+  })
+    .then(response => response.json())
+    .then(counts => {
+      console.log(counts.posts_count);
+      profile_posts.querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
+      profile_followers.querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
+      profile_following.querySelector('strong').innerHTML = `Following (${counts.following_count})`;
+    })
+
   if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
     const follow_bar_button = document.querySelector('#profile-follow-button');
     follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
-
-    const csrftoken = getCookie('csrftoken');
-
-
-    fetch(`/profile/${profile.username}`, {
-      headers: { 'X-CSRFToken': csrftoken },
-      method: 'POST',
-      body: JSON.stringify({
-        "get_counts": profile.username
-      })
-    })
-      .then(response => response.json())
-      .then(counts => {
-        console.log(counts.posts_count);
-        profile_posts.querySelector('strong').innerHTML = `Posts (${counts.posts_count})`;
-        profile_followers.querySelector('strong').innerHTML = `Followers (${counts.followers_count})`;
-        profile_following.querySelector('strong').innerHTML = `Following (${counts.following_count})`;
-      })
-
 
     fetch(`/profile/${profile.username}`, {
       headers: { 'X-CSRFToken': csrftoken },
@@ -119,7 +117,6 @@ function load_profile(profile) {
         } else {
           follow_bar_button.innerHTML = 'Follow +';
         }
-
       })
 
     follow_bar_button.onclick = () => {
