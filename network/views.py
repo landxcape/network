@@ -146,6 +146,7 @@ def post(request, post_id):
         }, status=400)
 
 
+@login_required(login_url="login")
 def profile(request, username):
     if request.method == "POST":
         # Query for requested post
