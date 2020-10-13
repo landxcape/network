@@ -187,6 +187,7 @@ def profile(request, username):
             elif data["get_follow"] == "get_followings":
                 follows = User.objects.get(
                     username=username).followings.all()
+            follows = follows.order_by("username")
             follows = [follow.username for follow in follows]
             return JsonResponse(follows, safe=False)
         else:

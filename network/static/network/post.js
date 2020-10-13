@@ -104,7 +104,13 @@ function load_profile(profile) {
   update_count(profile.username);
 
   if (profile.username !== document.querySelector('#username').querySelector('strong').innerHTML) {
-    const follow_bar_button = document.querySelector('#profile-follow-button');
+    var follow_bar_button = profile_view.querySelector('#profile-follow-button');
+    if (follow_bar_button === null) {
+      follow_bar_button = document.createElement('button');
+    }
+
+
+    follow_bar_button.id = 'profile-follow-button';
     follow_bar_button.classList.add('btn', 'btn-outline-primary', 'btn-block');
 
     fetch(`/profile/${profile.username}`, {
@@ -149,9 +155,10 @@ function load_profile(profile) {
         })
       return false;
     }
+    document.querySelector('#profile-follow-div').appendChild(follow_bar_button);
   } else {
     try {
-      document.querySelector('#profile-follow-button').parentNode.removeChild(document.querySelector('#profile-follow-button'));
+      document.querySelector('#profile-follow-div').removeChild(document.querySelector('#profile-follow-button'));
     } catch (error) { }
   }
 
@@ -215,10 +222,13 @@ function show_follows(username, get_follow, profile_container) {
     .then(follows => {
       follows.forEach(follow => {
         const follow_row = document.createElement('div');
-        follow_row.classList.add('row');
+        follow_row.classList.add('row', 'mx-1', 'p-1', 'font-weight-bold');
 
-        console.log(follow);
         follow_row.innerHTML = follow;
+
+        follow_row.onclick = () => {
+          load_profile({ "username": follow });
+        }
 
         follows_col.appendChild(follow_row);
         follows_col.appendChild(document.createElement('hr'));
