@@ -258,10 +258,8 @@ function show_posts(page, post_view, page_number) {
       const post_card_template = document.querySelector('#post-card-template');
       post_card_template.style.display = 'block';
 
-      if (page === 'posts_following') {
-        while (post_view.childNodes.length > 1) {
-          post_view.removeChild(post_view.lastChild);
-        }
+      while (post_view.childNodes.length > 2) {
+        post_view.removeChild(post_view.lastChild);
       }
 
       posts.forEach(post => {
@@ -440,6 +438,63 @@ function show_posts(page, post_view, page_number) {
       post_card_template.style.display = 'none';
 
 
+      var post_nav = document.createElement('nav');
+      post_nav.setAttribute('aria-label', 'page navigation');
+
+      var nav_ul = document.createElement('ul');
+      nav_ul.classList.add('pagination', 'justify-content-center');
+
+      if (page_obj.has_previous) {
+        var ul_li_first = document.createElement('li');
+        ul_li_first.classList.add('page-item');
+        var ul_li_first_button = document.createElement('button');
+        ul_li_first_button.classList.add('page-link', 'btn', 'btn-link');
+        ul_li_first_button.innerHTML = 'First';
+        ul_li_first_button.onclick = () => show_posts(page, post_view, 1);
+        ul_li_first.appendChild(ul_li_first_button);
+        nav_ul.appendChild(ul_li_first);
+
+        var ul_li_previous = document.createElement('li');
+        ul_li_previous.classList.add('page-item');
+        var ul_li_previous_button = document.createElement('button');
+        ul_li_previous_button.classList.add('page-link', 'btn', 'btn-link');
+        ul_li_previous_button.innerHTML = `${page_obj.previous_page_number}`;
+        ul_li_previous_button.onclick = () => show_posts(page, post_view, page_obj.previous_page_number);
+        ul_li_previous.appendChild(ul_li_previous_button);
+        nav_ul.appendChild(ul_li_previous);
+      }
+
+      var ul_li_current = document.createElement('li');
+      ul_li_current.classList.add('page-item');
+      var ul_li_current_button = document.createElement('button');
+      ul_li_current_button.classList.add('page-link', 'btn', 'btn-link', 'disabled');
+      ul_li_current_button.innerHTML = `Page ${page_obj.current_page} / ${page_obj.total_pages}`;
+      ul_li_current.appendChild(ul_li_current_button);
+      nav_ul.appendChild(ul_li_current);
+
+      if (page_obj.has_next) {
+        var ul_li_next = document.createElement('li');
+        ul_li_next.classList.add('page-item');
+        var ul_li_next_button = document.createElement('button');
+        ul_li_next_button.classList.add('page-link', 'btn', 'btn-link');
+        ul_li_next_button.innerHTML = `${page_obj.next_page_number}`
+        ul_li_next_button.onclick = () => show_posts(page, post_view, page_obj.next_page_number);
+        ul_li_next.appendChild(ul_li_next_button);
+        nav_ul.appendChild(ul_li_next);
+
+        var ul_li_last = document.createElement('li');
+        ul_li_last.classList.add('page-item');
+        var ul_li_last_button = document.createElement('button');
+        ul_li_last_button.classList.add('page-link', 'btn', 'btn-link');
+        ul_li_last_button.innerHTML = 'Last';
+        ul_li_last_button.onclick = () => show_posts(page, post_view, page_obj.total_pages);
+        ul_li_last.appendChild(ul_li_last_button);
+        nav_ul.appendChild(ul_li_last);
+      }
+
+      post_nav.appendChild(nav_ul);
+
+      post_view.appendChild(post_nav);
     })
   return false;
 }

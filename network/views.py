@@ -12,7 +12,6 @@ from .models import User, Posts, Comments
 
 
 posts_per_page = 10
-# page_number = 1
 
 
 @login_required(login_url="login")
@@ -95,10 +94,10 @@ def page(request, page):
     elif page == "posts_following":
         posts = Posts.objects.filter(user_id__followers=(
             User.objects.get(username=request.user.username)))
+        print("posts", posts)
     elif page.split('-')[0] == 'username':
         posts = Posts.objects.filter(
             user_id=User.objects.get(username=page.split('-')[1]))
-
     else:
         return JsonResponse({"error": "Invalid page."}, status=400)
 
@@ -114,7 +113,7 @@ def page(request, page):
         "has_next": page_obj.has_next(),
         "previous_page_number": page_obj.previous_page_number() if page_obj.has_previous() else 1,
         "current_page": page_obj.number,
-        "next_page_number": page_obj.next_page_number(),
+        "next_page_number": page_obj.next_page_number() if page_obj.has_next() else page_obj.paginator.num_pages,
         "total_pages": page_obj.paginator.num_pages,
         "object_list": [post.serialize(request.user) for post in page_obj.object_list]
     })
