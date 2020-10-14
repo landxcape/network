@@ -415,7 +415,7 @@ function show_posts(page, post_view, page_number) {
 
                     var comment_row_timestamp = document.createElement('div');
                     comment_row_timestamp.classList.add('d-flex', 'justify-content-end', 'text-secondary', 'small');
-                    comment_row_timestamp.innerHTML = Date(comment.timestamp);
+                    comment_row_timestamp.innerHTML = comment.timestamp;
 
                     comment_col.appendChild(comment_commentor);
                     comment_col.appendChild(comment_row_text);
