@@ -38,7 +38,8 @@ function load_page(page) {
 
   post_button.onclick = () => post_form();
 
-  show_posts(page, post_view);
+  var page_number = 1;
+  show_posts(page, post_view, page_number);
 }
 
 function post_network() {
@@ -172,7 +173,8 @@ function load_profile(profile) {
     profile_container.classList.add('my-5');
 
     profile_view.appendChild(profile_container);
-    show_posts(`username-${profile.username}`, profile_container);
+    var page_number = 1;
+    show_posts(`username-${profile.username}`, profile_container, page_number);
   }
 
   profile_followers.onclick = () => {
@@ -238,10 +240,21 @@ function show_follows(username, get_follow, profile_container) {
 }
 
 
-function show_posts(page, post_view) {
-  fetch(`/posts/${page}`)
+function show_posts(page, post_view, page_number) {
+  const csrftoken = getCookie('csrftoken');
+
+  fetch(`/posts/${page}`, {
+    headers: { 'X-CSRFToken': csrftoken },
+    method: 'POST',
+    body: JSON.stringify({
+      "page": page_number
+    })
+  })
     .then(response => response.json())
-    .then(posts => {
+    .then(page_obj => {
+      console.log(page_obj);
+      var posts = page_obj.object_list;
+
       const post_card_template = document.querySelector('#post-card-template');
       post_card_template.style.display = 'block';
 
@@ -425,6 +438,8 @@ function show_posts(page, post_view) {
         }
       })
       post_card_template.style.display = 'none';
+
+
     })
   return false;
 }

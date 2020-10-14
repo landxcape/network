@@ -6,8 +6,13 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 from .models import User, Posts, Comments
+
+
+posts_per_page = 10
+# page_number = 1
 
 
 @login_required(login_url="login")
@@ -82,6 +87,7 @@ def posts(request):
 
 @login_required(login_url="login")
 def page(request, page):
+    data = json.loads(request.body)
 
     # Filter posts returned based on mailbox
     if page == "all_posts":
@@ -90,16 +96,28 @@ def page(request, page):
         posts = Posts.objects.filter(user_id__followers=(
             User.objects.get(username=request.user.username)))
     elif page.split('-')[0] == 'username':
-        posts_user = Posts.objects.filter(
+        posts = Posts.objects.filter(
             user_id=User.objects.get(username=page.split('-')[1]))
-        posts_user = posts_user.order_by("-timestamp").all()
-        return JsonResponse([post.serialize(request.user) for post in posts_user], safe=False)
+
     else:
         return JsonResponse({"error": "Invalid page."}, status=400)
 
     # Return posts in reverse chronologial order
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize(request.user) for post in posts], safe=False)
+
+    paginator = Paginator(posts, posts_per_page)
+    page_number = data.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return JsonResponse({
+        "has_previous": page_obj.has_previous(),
+        "has_next": page_obj.has_next(),
+        "previous_page_number": page_obj.previous_page_number() if page_obj.has_previous() else 1,
+        "current_page": page_obj.number,
+        "next_page_number": page_obj.next_page_number(),
+        "total_pages": page_obj.paginator.num_pages,
+        "object_list": [post.serialize(request.user) for post in page_obj.object_list]
+    })
 
 
 @login_required(login_url="login")
@@ -176,9 +194,6 @@ def profile(request, username):
                     User.objects.get(username=data["follow"]))
                 message = "added"
             return JsonResponse({
-                "follower": request.user.username,
-                "following": data["follow"],
-                "user": User.objects.get(username=request.user.username).serialize(),
                 "follow_check": user.followings.filter(username=data["follow"]).exists()
             })
         elif data.get("get_follow"):
@@ -194,9 +209,9 @@ def profile(request, username):
         else:
             return JsonResponse({"error": "invalid request"})
 
-    posts = Posts.objects.filter(user_id=User.objects.get(username=username))
-    posts.order_by("-timestamp").all()
+    # posts = Posts.objects.filter(user_id=User.objects.get(username=username))
+    # posts.order_by("-timestamp").all()
     return JsonResponse({
         "username": username,
-        "posts": [post.serialize(request.user) for post in posts],
+        # "posts": [post.serialize(request.user) for post in posts],
     })
