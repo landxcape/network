@@ -208,9 +208,6 @@ def profile(request, username):
         else:
             return JsonResponse({"error": "invalid request"})
 
-    # posts = Posts.objects.filter(user_id=User.objects.get(username=username))
-    # posts.order_by("-timestamp").all()
     return JsonResponse({
         "username": username,
-        # "posts": [post.serialize(request.user) for post in posts],
     })
