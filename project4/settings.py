@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'network',
         'USER': 'postgres',
         'PASSWORD': 'postgres123',
-        'HOST': 'localhost',
+        'HOST': 'https://network-demo-test.azurewebsites.net/',
     }
 }
 
