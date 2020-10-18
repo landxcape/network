@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '13kl@xtukpwe&xj2xoysxe9_6=tf@f8ewxer5n&ifnd46+6$%8'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['network-demo-test.azurewebsites.net']
 
 
 # Application definition
@@ -76,44 +76,25 @@ WSGI_APPLICATION = 'project4.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-
-if 'DJANGO_DATABASE_PASSWORD' in os.environ.keys():
-    # Staging or production database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ['DJANGO_DATABASE_NAME'],
-            'USER': os.environ['DJANGO_DATABASE_USER'],
-            'PASSWORD': os.environ['DJANGO_DATABASE_PASSWORD'],
-            'HOST': os.environ['DJANGO_DATABASE_SERVER'],
-            'PORT': '5432',
-            'OPTIONS': {
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['DJANGO_DATABASE_NAME'],
+        'USER': os.environ['DJANGO_DATABASE_USER'],
+        'PASSWORD': os.environ['DJANGO_DATABASE_PASSWORD'],
+        'HOST': os.environ['DJANGO_DATABASE_SERVER'],
+        'PORT': '5432',
+        'OPTIONS': {
                 'sslmode': 'require',
-            },
-        }
+        },
     }
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'cache_table',
-        }
+}
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
     }
-else:
-    # development database
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'network',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres123',
-            'HOST': 'localhost',
-        }
-    }
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        }
-    }
+}
 
 AUTH_USER_MODEL = "network.User"
 
@@ -157,4 +138,7 @@ STATIC_URL = "/static/"
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, "network/static").replace("\\", "/"),
 # ]
-STATIC_ROOT = os.path.join(BASE_DIR, "assets").replace("\\", "/")
+# STATIC_ROOT = os.path.join(BASE_DIR, "assets").replace("\\", "/")
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
