@@ -48,6 +48,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware'
 ]
 
 ROOT_URLCONF = 'project4.urls'
@@ -74,16 +76,44 @@ WSGI_APPLICATION = 'project4.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'network',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres123',
-        # 'HOST': 'localhost',
-        'HOST': 'network-demo-test.azurewebsites.net',
+
+if 'DJANGO_DATABASE_PASSWORD' in os.environ.keys():
+    # Staging or production database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ['DJANGO_DATABASE_NAME'],
+            'USER': os.environ['DJANGO_DATABASE_USER'],
+            'PASSWORD': os.environ['DJANGO_DATABASE_PASSWORD'],
+            'HOST': os.environ['DJANGO_DATABASE_SERVER'],
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION': 'cache_table',
+        }
+    }
+else:
+    # development database
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'network',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres123',
+            'HOST': 'localhost',
+        }
+    }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 AUTH_USER_MODEL = "network.User"
 
